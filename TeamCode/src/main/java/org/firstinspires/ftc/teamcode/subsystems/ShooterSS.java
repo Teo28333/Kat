@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -30,6 +32,8 @@ public class ShooterSS implements SubsystemInterface {
         shooterEquation = new ShooterEquation();
         pidfsController = new PIDFSController(hardwareMap);
         shooterMotor = hardwareMap.get(DcMotorEx.class, shooterMotorName);
+        shooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooterMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
 
     public void read() {

@@ -7,10 +7,10 @@ public class ShooterConstants {
     public static String shooterMotorName = "shooter";
 
     public static double
-            kP = 0.0,
+            kP = 0.00001,
             kI = 0.0,
             kD = 0.0,
-            kF = 0.0,
+            kF = 0.000189,
             kS = 0.0;
 
     public static double MAX_INTEGRAL = 5000;

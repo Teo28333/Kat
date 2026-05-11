@@ -39,7 +39,7 @@ public class TurretSS implements SubsystemInterface {
     }
 
     public void write() {
-        turretMotor.setPower(turretPow);
+        turretMotor.setPower(limitPowerForCableRange(turretPow));
     }
 
     public void telemetry() {
@@ -49,7 +49,7 @@ public class TurretSS implements SubsystemInterface {
 
         telemetry.addData("Turret target deg", "%.1f", targetAngleDeg);
         telemetry.addData("Turret current deg", "%.1f", currentAngleDeg);
-        telemetry.addData("Turret error deg", "%.1f", normalizeDegrees(targetAngleDeg - currentAngleDeg));
+        telemetry.addData("Turret error deg", "%.1f", targetAngleDeg - currentAngleDeg);
         telemetry.addData("Turret power", "%.3f", turretPow);
         telemetry.addData("Turret at target", isAtTarget());
     }
@@ -66,7 +66,7 @@ public class TurretSS implements SubsystemInterface {
 
     public void aimAtTarget(double robotX, double robotY, double heading, double goalX, double goalY, double targetAngleOffsetDeg) {
         double fieldAngleDeg = Math.toDegrees(Math.atan2(goalY - robotY, goalX - robotX));
-        targetAngleDeg = clampToTurretRange(normalizeDegrees(fieldAngleDeg - Math.toDegrees(heading) + targetAngleOffsetDeg));
+        targetAngleDeg = clampToTurretRange(normalizeDegrees(fieldAngleDeg - Math.toDegrees(heading) - 180.0 + targetAngleOffsetDeg));
 
         turretPow = calculateTurretPower(targetAngleDeg, currentAngleDeg);
     }
@@ -77,7 +77,7 @@ public class TurretSS implements SubsystemInterface {
     }
 
     public boolean isAtTarget() {
-        return Math.abs(normalizeDegrees(targetAngleDeg - currentAngleDeg)) <= angleToleranceDeg;
+        return Math.abs(targetAngleDeg - currentAngleDeg) <= angleToleranceDeg;
     }
 
     public double getCurrentAngleDeg() {
@@ -93,13 +93,13 @@ public class TurretSS implements SubsystemInterface {
     }
 
     public void aimToAngleDeg(double targetAngleDeg) {
-        this.targetAngleDeg = clampToTurretRange(normalizeDegrees(targetAngleDeg));
+        this.targetAngleDeg = clampToTurretRange(targetAngleDeg);
         turretPow = calculateTurretPower(this.targetAngleDeg, currentAngleDeg);
     }
 
     private double calculateTurretPower(double targetDeg, double currentDeg) {
         long nowNs = System.nanoTime();
-        double error = normalizeDegrees(targetDeg - currentDeg);
+        double error = targetDeg - currentDeg;
 
         if (Math.abs(error) <= angleToleranceDeg) {
             resetController();
@@ -133,7 +133,7 @@ public class TurretSS implements SubsystemInterface {
     }
 
     private static double encoderTicksToDegrees(int ticks) {
-        return clampToTurretRange(normalizeDegrees((ticks / ticksPerRev) * 360.0 / gearRatio + encoderOffsetDeg));
+        return (ticks / ticksPerRev) * 360.0 / gearRatio + encoderOffsetDeg;
     }
 
     private static double normalizeDegrees(double angleDeg) {
@@ -148,5 +148,15 @@ public class TurretSS implements SubsystemInterface {
 
     private static double clampToTurretRange(double angleDeg) {
         return clamp(angleDeg, minAngleDeg, maxAngleDeg);
+    }
+
+    private double limitPowerForCableRange(double power) {
+        if (currentAngleDeg <= minAngleDeg && power < 0.0) {
+            return 0.0;
+        }
+        if (currentAngleDeg >= maxAngleDeg && power > 0.0) {
+            return 0.0;
+        }
+        return power;
     }
 }

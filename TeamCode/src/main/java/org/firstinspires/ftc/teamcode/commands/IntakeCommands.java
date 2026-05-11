@@ -108,14 +108,6 @@ public class IntakeCommands {
     }
 
     private void updateTransfer(boolean shooterReady) {
-        if (!shooterReady) {
-            intake.stopIntake();
-            transfer.resetKicker();
-            transferPhase = TransferPhase.FEEDING;
-            transferTimer.reset();
-            return;
-        }
-
         switch (transferPhase) {
             case FEEDING:
                 intake.intake();

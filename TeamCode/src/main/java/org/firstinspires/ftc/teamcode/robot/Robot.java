@@ -96,6 +96,7 @@ public class Robot {
         telemetry.addData("Turret angle offset", "%.1f", turretTargetOffsetDeg);
         telemetry.addData("Intake", intakeCommands.getState());
         telemetry.addData("Shooter ready", shooter.isReady());
+        telemetry.addData("Transfer active", intakeCommands.isTransferring());
         addRobotTelemetry(currentPose);
         telemetry.update();
 
